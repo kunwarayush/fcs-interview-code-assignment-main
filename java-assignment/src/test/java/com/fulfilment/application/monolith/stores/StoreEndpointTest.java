@@ -9,8 +9,10 @@ import io.restassured.http.ContentType;
 import org.junit.jupiter.api.*;
 
 /**
- * Integration tests for Store REST API endpoints
- * Tests CRUD operations with TransactionSynchronizationRegistry integration
+ * Integration tests for Store REST API endpoints.
+ *
+ * <p>Tests CRUD operations with post-commit transaction callbacks via TransactionSyncService.
+ * Verifies that legacy system integration happens only after successful database commits.
  */
 @QuarkusTest
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)

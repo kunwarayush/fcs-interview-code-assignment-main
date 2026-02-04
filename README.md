@@ -29,6 +29,9 @@ This repository contains the completed Java code assignment implementing a fulfi
 - **Health Checks**: `/q/health`, `/q/health/live`, `/q/health/ready` endpoints
 - **CI/CD Pipeline**: GitHub Actions workflow for automated testing
 - **Comprehensive Testing**: 109 tests with 84% instruction coverage
+- **TransactionSyncService**: Refactored transaction callback pattern
+  - Eliminated 39 lines of duplicated code
+  - Comprehensive unit tests for transaction behavior
 
 ---
 
@@ -80,11 +83,33 @@ Once running, access:
 
 ---
 
+## Architecture & Design Patterns
+
+### Transaction Management
+- **TransactionSyncService**: Custom service for post-commit callback execution
+- **Use Case**: Store operations notify legacy systems only after successful DB commits
+- **Pattern**: Separation of concerns between HTTP handlers and transaction logic
+- **Testing**: Full unit test coverage for commit/rollback scenarios
+
+### Repository Pattern (Warehouse)
+- **Domain-Driven Design**: Clean separation of domain models and infrastructure
+- **Port & Adapters**: Business logic isolated from database and REST concerns
+- **Validation**: Business rules enforced in use case layer
+
+### Active Record (Store & Product)
+- **Quick CRUD**: Panache Active Record for simple data operations
+- **Trade-off**: Less abstraction but faster development for basic entities
+
 ## Test Coverage
 
-**Total Tests**: 109 (100% passing)  
+**Total Tests**: 115+ (100% passing)  
 **Instruction Coverage**: 84% (exceeds 80% requirement)  
 **Branch Coverage**: 70%
+
+**Test Types:**
+- Integration Tests: Full stack validation (REST → DB)
+- Unit Tests: Use cases, validation logic, transaction callbacks
+- Edge Cases: Boundary conditions, error handling
 
 Coverage report: `java-assignment/target/site/jacoco/index.html`
 

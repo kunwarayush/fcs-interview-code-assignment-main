@@ -5,9 +5,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.transaction.Status;
-import jakarta.transaction.Synchronization;
-import jakarta.transaction.TransactionSynchronizationRegistry;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
@@ -32,7 +29,7 @@ public class StoreResource {
 
   @Inject LegacyStoreManagerGateway legacyStoreManagerGateway;
 
-  @Inject TransactionSynchronizationRegistry syncRegistry;
+  @Inject TransactionSyncService transactionSyncService;
 
   private static final Logger LOGGER = Logger.getLogger(StoreResource.class.getName());
 
@@ -60,22 +57,9 @@ public class StoreResource {
 
     store.persist();
 
-    // Register callback to execute AFTER successful commit
-    syncRegistry.registerInterposedSynchronization(
-        new Synchronization() {
-          @Override
-          public void beforeCompletion() {
-            // Can perform validation here if needed
-          }
-
-          @Override
-          public void afterCompletion(int status) {
-            if (status == Status.STATUS_COMMITTED) {
-              // Only call legacy system after database commit succeeds
-              legacyStoreManagerGateway.createStoreOnLegacySystem(store);
-            }
-          }
-        });
+    // Call legacy system only after successful database commit
+    transactionSyncService.executeAfterCommit(
+        () -> legacyStoreManagerGateway.createStoreOnLegacySystem(store));
 
     return Response.ok(store).status(201).build();
   }
@@ -97,19 +81,8 @@ public class StoreResource {
     entity.name = updatedStore.name;
     entity.quantityProductsInStock = updatedStore.quantityProductsInStock;
 
-    final Store finalEntity = entity;
-    syncRegistry.registerInterposedSynchronization(
-        new Synchronization() {
-          @Override
-          public void beforeCompletion() {}
-
-          @Override
-          public void afterCompletion(int status) {
-            if (status == Status.STATUS_COMMITTED) {
-              legacyStoreManagerGateway.updateStoreOnLegacySystem(finalEntity);
-            }
-          }
-        });
+    transactionSyncService.executeAfterCommit(
+        () -> legacyStoreManagerGateway.updateStoreOnLegacySystem(entity));
 
     return entity;
   }
@@ -136,19 +109,8 @@ public class StoreResource {
       entity.quantityProductsInStock = updatedStore.quantityProductsInStock;
     }
 
-    final Store finalEntity = entity;
-    syncRegistry.registerInterposedSynchronization(
-        new Synchronization() {
-          @Override
-          public void beforeCompletion() {}
-
-          @Override
-          public void afterCompletion(int status) {
-            if (status == Status.STATUS_COMMITTED) {
-              legacyStoreManagerGateway.updateStoreOnLegacySystem(finalEntity);
-            }
-          }
-        });
+    transactionSyncService.executeAfterCommit(
+        () -> legacyStoreManagerGateway.updateStoreOnLegacySystem(entity));
 
     return entity;
   }
