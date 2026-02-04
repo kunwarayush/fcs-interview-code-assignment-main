@@ -1,5 +1,6 @@
 package com.fulfilment.application.monolith.warehouses.adapters.restapi;
 
+import com.fulfilment.application.monolith.warehouses.domain.exceptions.WarehouseNotFoundException;
 import com.fulfilment.application.monolith.warehouses.domain.ports.ArchiveWarehouseOperation;
 import com.fulfilment.application.monolith.warehouses.domain.ports.CreateWarehouseOperation;
 import com.fulfilment.application.monolith.warehouses.domain.ports.ReplaceWarehouseOperation;
@@ -10,7 +11,6 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotNull;
-import jakarta.ws.rs.WebApplicationException;
 import java.util.List;
 
 @ApplicationScoped
@@ -36,19 +36,16 @@ public class WarehouseResourceImpl implements WarehouseResource {
   @Override
   @Transactional
   public Warehouse createANewWarehouseUnit(@NotNull Warehouse data) {
-    try {
-      // Convert API bean to domain model
-      com.fulfilment.application.monolith.warehouses.domain.models.Warehouse domainWarehouse =
-          toDomainWarehouse(data);
+    // Convert API bean to domain model
+    com.fulfilment.application.monolith.warehouses.domain.models.Warehouse domainWarehouse =
+        toDomainWarehouse(data);
 
-      // Execute create use case with validations
-      createWarehouseOperation.create(domainWarehouse);
+    // Execute create use case with validations
+    // Exceptions (LocationNotFoundException, IllegalArgumentException) are handled by ExceptionMappers
+    createWarehouseOperation.create(domainWarehouse);
 
-      // Return the created warehouse as API bean
-      return data;
-    } catch (IllegalArgumentException e) {
-      throw new WebApplicationException(e.getMessage(), 400);
-    }
+    // Return the created warehouse as API bean
+    return data;
   }
 
   @Override
@@ -58,7 +55,7 @@ public class WarehouseResourceImpl implements WarehouseResource {
         warehouseStore.findByBusinessUnitCode(id);
 
     if (warehouse == null) {
-      throw new WebApplicationException("Warehouse with id " + id + " not found", 404);
+      throw new WarehouseNotFoundException(id);
     }
 
     return toApiWarehouse(warehouse);
@@ -67,34 +64,29 @@ public class WarehouseResourceImpl implements WarehouseResource {
   @Override
   @Transactional
   public void archiveAWarehouseUnitByID(String id) {
-    try {
-      com.fulfilment.application.monolith.warehouses.domain.models.Warehouse warehouse =
-          new com.fulfilment.application.monolith.warehouses.domain.models.Warehouse();
-      warehouse.businessUnitCode = id;
+    com.fulfilment.application.monolith.warehouses.domain.models.Warehouse warehouse =
+        new com.fulfilment.application.monolith.warehouses.domain.models.Warehouse();
+    warehouse.businessUnitCode = id;
 
-      archiveWarehouseOperation.archive(warehouse);
-    } catch (IllegalArgumentException e) {
-      throw new WebApplicationException(e.getMessage(), 404);
-    }
+    // WarehouseNotFoundException is handled by ExceptionMapper
+    archiveWarehouseOperation.archive(warehouse);
   }
 
   @Override
   @Transactional
   public Warehouse replaceTheCurrentActiveWarehouse(String businessUnitCode, Warehouse data) {
-    try {
-      // Convert API bean to domain model
-      com.fulfilment.application.monolith.warehouses.domain.models.Warehouse domainWarehouse =
-          toDomainWarehouse(data);
-      domainWarehouse.businessUnitCode = businessUnitCode;
+    // Convert API bean to domain model
+    com.fulfilment.application.monolith.warehouses.domain.models.Warehouse domainWarehouse =
+        toDomainWarehouse(data);
+    domainWarehouse.businessUnitCode = businessUnitCode;
 
-      // Execute replace use case with validations
-      replaceWarehouseOperation.replace(domainWarehouse);
+    // Execute replace use case with validations
+    // Exceptions (WarehouseNotFoundException, LocationNotFoundException, IllegalArgumentException)
+    // are handled by ExceptionMappers
+    replaceWarehouseOperation.replace(domainWarehouse);
 
-      // Return the replaced warehouse as API bean
-      return data;
-    } catch (IllegalArgumentException e) {
-      throw new WebApplicationException(e.getMessage(), 400);
-    }
+    // Return the replaced warehouse as API bean
+    return data;
   }
 
   // Convert API bean to domain model

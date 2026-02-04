@@ -39,12 +39,13 @@ public class LocationGatewayTest {
   @DisplayName("Should throw exception for non-existent location")
   void testResolveByIdentifier_NotFound() {
     // When & Then
-    IllegalArgumentException exception =
+    LocationNotFoundException exception =
         assertThrows(
-            IllegalArgumentException.class,
+            LocationNotFoundException.class,
             () -> locationGateway.resolveByIdentifier("INVALID-001"));
 
     assertEquals("Location with identifier INVALID-001 not found.", exception.getMessage());
+    assertEquals("INVALID-001", exception.getIdentifier());
   }
 
   @Test
@@ -66,15 +67,15 @@ public class LocationGatewayTest {
   void testResolveByIdentifier_NullIdentifier() {
     // When & Then
     assertThrows(
-        IllegalArgumentException.class, () -> locationGateway.resolveByIdentifier(null));
+        LocationNotFoundException.class, () -> locationGateway.resolveByIdentifier(null));
   }
 
   @Test
   @DisplayName("Should throw exception for empty identifier")
   void testResolveByIdentifier_EmptyIdentifier() {
     // When & Then
-    IllegalArgumentException exception =
-        assertThrows(IllegalArgumentException.class, () -> locationGateway.resolveByIdentifier(""));
+    LocationNotFoundException exception =
+        assertThrows(LocationNotFoundException.class, () -> locationGateway.resolveByIdentifier(""));
 
     assertEquals("Location with identifier  not found.", exception.getMessage());
   }

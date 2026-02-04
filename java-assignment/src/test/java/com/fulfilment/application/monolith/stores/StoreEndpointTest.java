@@ -126,7 +126,7 @@ class StoreEndpointTest {
         .when()
         .post(STORES_ENDPOINT)
         .then()
-        .statusCode(422)
+        .statusCode(400)
         .body(containsString("Id was invalidly set"));
   }
 
@@ -159,7 +159,7 @@ class StoreEndpointTest {
         .when()
         .put(STORES_ENDPOINT + "/" + createdStoreId)
         .then()
-        .statusCode(422)
+        .statusCode(400)
         .body(containsString("Store Name was not set"));
   }
 
@@ -192,7 +192,7 @@ class StoreEndpointTest {
         .when()
         .patch(STORES_ENDPOINT + "/" + createdStoreId)
         .then()
-        .statusCode(422)
+        .statusCode(400)
         .body(containsString("Store Name was not set"));
   }
 

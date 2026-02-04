@@ -106,7 +106,7 @@ class WarehouseEndpointTest {
         .when()
         .post(WAREHOUSE_ENDPOINT)
         .then()
-        .statusCode(400)
+        .statusCode(404)
         .body(containsString("not found"));
   }
 
@@ -428,7 +428,7 @@ class WarehouseEndpointTest {
         .when()
         .post(WAREHOUSE_ENDPOINT + "/" + buCode + "/replacement")
         .then()
-        .statusCode(400)
+        .statusCode(404)
         .body(containsString("not found"));
   }
 
@@ -474,7 +474,7 @@ class WarehouseEndpointTest {
         .when()
         .post(WAREHOUSE_ENDPOINT + "/NONEXISTENT-999/replacement")
         .then()
-        .statusCode(400)
+        .statusCode(404)
         .body(containsString("not found"));
   }
 }

@@ -4,7 +4,10 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import com.fulfilment.application.monolith.exceptions.BusinessValidationException;
+import com.fulfilment.application.monolith.location.LocationNotFoundException;
 import com.fulfilment.application.monolith.warehouses.adapters.database.WarehouseRepository;
+import com.fulfilment.application.monolith.warehouses.domain.exceptions.WarehouseNotFoundException;
 import com.fulfilment.application.monolith.warehouses.domain.models.Location;
 import com.fulfilment.application.monolith.warehouses.domain.models.Warehouse;
 import com.fulfilment.application.monolith.warehouses.domain.ports.LocationResolver;
@@ -63,12 +66,13 @@ class ReplaceWarehouseUseCaseTest {
     when(warehouseRepository.findByBusinessUnitCode("MWH.100")).thenReturn(null);
 
     // When & Then
-    IllegalArgumentException exception =
+    WarehouseNotFoundException exception =
         assertThrows(
-            IllegalArgumentException.class, () -> replaceWarehouseUseCase.replace(newWarehouse));
+            WarehouseNotFoundException.class, () -> replaceWarehouseUseCase.replace(newWarehouse));
 
     assertEquals(
         "Warehouse with business unit code MWH.100 not found", exception.getMessage());
+    assertEquals("MWH.100", exception.getBusinessUnitCode());
     verify(warehouseRepository, never()).update(any());
   }
 
@@ -81,15 +85,15 @@ class ReplaceWarehouseUseCaseTest {
 
     when(warehouseRepository.findByBusinessUnitCode("MWH.100")).thenReturn(oldWarehouse);
     when(locationResolver.resolveByIdentifier("AMSTERDAM-002"))
-        .thenThrow(
-            new IllegalArgumentException("Location with identifier AMSTERDAM-002 not found."));
+        .thenThrow(new LocationNotFoundException("AMSTERDAM-002"));
 
     // When & Then
-    IllegalArgumentException exception =
+    LocationNotFoundException exception =
         assertThrows(
-            IllegalArgumentException.class, () -> replaceWarehouseUseCase.replace(newWarehouse));
+            LocationNotFoundException.class, () -> replaceWarehouseUseCase.replace(newWarehouse));
 
     assertTrue(exception.getMessage().contains("Location with identifier AMSTERDAM-002 not found"));
+    assertEquals("AMSTERDAM-002", exception.getIdentifier());
     verify(warehouseRepository, never()).update(any());
   }
 
@@ -106,9 +110,9 @@ class ReplaceWarehouseUseCaseTest {
     when(locationResolver.resolveByIdentifier("AMSTERDAM-002")).thenReturn(location);
 
     // When & Then
-    IllegalArgumentException exception =
+    BusinessValidationException exception =
         assertThrows(
-            IllegalArgumentException.class, () -> replaceWarehouseUseCase.replace(newWarehouse));
+            BusinessValidationException.class, () -> replaceWarehouseUseCase.replace(newWarehouse));
 
     assertEquals(
         "New warehouse stock (20) must match old warehouse stock (10)", exception.getMessage());
@@ -128,9 +132,9 @@ class ReplaceWarehouseUseCaseTest {
     when(locationResolver.resolveByIdentifier("AMSTERDAM-002")).thenReturn(location);
 
     // When & Then
-    IllegalArgumentException exception =
+    BusinessValidationException exception =
         assertThrows(
-            IllegalArgumentException.class, () -> replaceWarehouseUseCase.replace(newWarehouse));
+            BusinessValidationException.class, () -> replaceWarehouseUseCase.replace(newWarehouse));
 
     assertEquals(
         "New warehouse capacity (5) cannot accommodate stock (10)", exception.getMessage());
@@ -151,9 +155,9 @@ class ReplaceWarehouseUseCaseTest {
     when(warehouseRepository.getTotalCapacityAtLocation("AMSTERDAM-002")).thenReturn(50);
 
     // When & Then
-    IllegalArgumentException exception =
+    BusinessValidationException exception =
         assertThrows(
-            IllegalArgumentException.class, () -> replaceWarehouseUseCase.replace(newWarehouse));
+            BusinessValidationException.class, () -> replaceWarehouseUseCase.replace(newWarehouse));
 
     assertEquals(
         "Total capacity 120 would exceed location's maximum capacity of 100",

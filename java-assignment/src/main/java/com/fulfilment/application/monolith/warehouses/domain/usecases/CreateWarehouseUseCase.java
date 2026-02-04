@@ -1,5 +1,6 @@
 package com.fulfilment.application.monolith.warehouses.domain.usecases;
 
+import com.fulfilment.application.monolith.exceptions.BusinessValidationException;
 import com.fulfilment.application.monolith.warehouses.adapters.database.WarehouseRepository;
 import com.fulfilment.application.monolith.warehouses.domain.models.Location;
 import com.fulfilment.application.monolith.warehouses.domain.models.Warehouse;
@@ -35,21 +36,21 @@ public class CreateWarehouseUseCase implements CreateWarehouseOperation {
       LOGGER.warnf(
           "Warehouse creation failed: Business unit code %s already exists",
           warehouse.businessUnitCode);
-      throw new IllegalArgumentException(
+      throw new BusinessValidationException(
           "Warehouse with business unit code " + warehouse.businessUnitCode + " already exists");
     }
 
     // 2. Location Validation - must be valid
     Location location = locationResolver.resolveByIdentifier(warehouse.location);
     if (location == null) {
-      throw new IllegalArgumentException("Location " + warehouse.location + " is not valid");
+      throw new BusinessValidationException("Location " + warehouse.location + " is not valid");
     }
 
     // 3. Warehouse Creation Feasibility - check max number of warehouses
     WarehouseRepository repository = (WarehouseRepository) warehouseStore;
     long warehouseCount = repository.countActiveWarehousesAtLocation(warehouse.location);
     if (warehouseCount >= location.maxNumberOfWarehouses) {
-      throw new IllegalArgumentException(
+      throw new BusinessValidationException(
           "Maximum number of warehouses ("
               + location.maxNumberOfWarehouses
               + ") reached for location "
@@ -61,7 +62,7 @@ public class CreateWarehouseUseCase implements CreateWarehouseOperation {
     int currentTotalCapacity = repository.getTotalCapacityAtLocation(warehouse.location);
     int newTotalCapacity = currentTotalCapacity + warehouse.capacity;
     if (newTotalCapacity > location.maxCapacity) {
-      throw new IllegalArgumentException(
+      throw new BusinessValidationException(
           "Total capacity "
               + newTotalCapacity
               + " would exceed location's maximum capacity of "
@@ -70,7 +71,7 @@ public class CreateWarehouseUseCase implements CreateWarehouseOperation {
 
     // Validate warehouse capacity can handle its stock
     if (warehouse.stock > warehouse.capacity) {
-      throw new IllegalArgumentException(
+      throw new BusinessValidationException(
           "Warehouse stock ("
               + warehouse.stock
               + ") exceeds capacity ("

@@ -1,6 +1,8 @@
 package com.fulfilment.application.monolith.warehouses.domain.usecases;
 
+import com.fulfilment.application.monolith.exceptions.BusinessValidationException;
 import com.fulfilment.application.monolith.warehouses.adapters.database.WarehouseRepository;
+import com.fulfilment.application.monolith.warehouses.domain.exceptions.WarehouseNotFoundException;
 import com.fulfilment.application.monolith.warehouses.domain.models.Location;
 import com.fulfilment.application.monolith.warehouses.domain.models.Warehouse;
 import com.fulfilment.application.monolith.warehouses.domain.ports.LocationResolver;
@@ -33,19 +35,18 @@ public class ReplaceWarehouseUseCase implements ReplaceWarehouseOperation {
       LOGGER.warnf(
           "Warehouse replacement failed: Business unit code %s not found",
           newWarehouse.businessUnitCode);
-      throw new IllegalArgumentException(
-          "Warehouse with business unit code " + newWarehouse.businessUnitCode + " not found");
+      throw new WarehouseNotFoundException(newWarehouse.businessUnitCode);
     }
 
     // Location Validation
     Location location = locationResolver.resolveByIdentifier(newWarehouse.location);
     if (location == null) {
-      throw new IllegalArgumentException("Location " + newWarehouse.location + " is not valid");
+      throw new BusinessValidationException("Location " + newWarehouse.location + " is not valid");
     }
 
     // Stock Matching - new warehouse stock must match old warehouse stock
     if (!newWarehouse.stock.equals(oldWarehouse.stock)) {
-      throw new IllegalArgumentException(
+      throw new BusinessValidationException(
           "New warehouse stock ("
               + newWarehouse.stock
               + ") must match old warehouse stock ("
@@ -55,7 +56,7 @@ public class ReplaceWarehouseUseCase implements ReplaceWarehouseOperation {
 
     // Capacity Accommodation - new warehouse capacity must accommodate the stock
     if (newWarehouse.capacity < newWarehouse.stock) {
-      throw new IllegalArgumentException(
+      throw new BusinessValidationException(
           "New warehouse capacity ("
               + newWarehouse.capacity
               + ") cannot accommodate stock ("
@@ -74,7 +75,7 @@ public class ReplaceWarehouseUseCase implements ReplaceWarehouseOperation {
 
     int newTotalCapacity = currentTotalCapacity + newWarehouse.capacity;
     if (newTotalCapacity > location.maxCapacity) {
-      throw new IllegalArgumentException(
+      throw new BusinessValidationException(
           "Total capacity "
               + newTotalCapacity
               + " would exceed location's maximum capacity of "
@@ -83,7 +84,7 @@ public class ReplaceWarehouseUseCase implements ReplaceWarehouseOperation {
 
     // All validations passed, update the warehouse
     warehouseStore.update(newWarehouse);
-    
+
     LOGGER.infof(
         "Successfully replaced warehouse with business unit code: %s",
         newWarehouse.businessUnitCode);

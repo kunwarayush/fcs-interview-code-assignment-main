@@ -29,10 +29,43 @@ This repository contains the completed Java code assignment implementing a fulfi
 - **Health Checks**: `/q/health`, `/q/health/live`, `/q/health/ready` endpoints
 - **CI/CD Pipeline**: GitHub Actions workflow for automated testing
 - **Comprehensive Testing**: 109 tests with 84% instruction coverage
-- **TransactionSyncService**: Refactored transaction callback pattern
-  - Eliminated 39 lines of duplicated code
-  - Comprehensive unit tests for transaction behavior
+**TransactionSyncService** - A dedicated service for managing post-commit callbacks:
+```
+Reason : SOLID Princiapls
 
+```
+### Exception Handling Architecture
+
+#### Exception Hierarchy
+
+```
+RuntimeException
+├── EntityNotFoundException (abstract base for 404 errors)
+│   ├── StoreNotFoundException
+│   ├── WarehouseNotFoundException
+│   └── LocationNotFoundException
+└── BusinessValidationException (for 400 validation errors)
+```
+
+#### Custom Exceptions
+
+| Exception | Package | HTTP Status | Description |
+|-----------|---------|-------------|-------------|
+| `EntityNotFoundException` | `exceptions` | 404 | Abstract base for all "not found" errors |
+| `StoreNotFoundException` | `stores` | 404 | Store not found by ID |
+| `WarehouseNotFoundException` | `warehouses.domain.exceptions` | 404 | Warehouse not found by business unit code |
+| `LocationNotFoundException` | `location` | 404 | Location not found by identifier |
+| `BusinessValidationException` | `exceptions` | 400 | Business rule validation failures |
+
+#### Error Response Format
+
+All API errors return a consistent JSON structure:
+```json
+{
+  "code": "WAREHOUSE_NOT_FOUND",
+  "message": "Warehouse with business unit code MWH.001 not found"
+}
+```
 ---
 
 ## Quick Start

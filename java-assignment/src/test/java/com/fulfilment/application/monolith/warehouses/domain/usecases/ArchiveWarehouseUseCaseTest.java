@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import com.fulfilment.application.monolith.warehouses.domain.exceptions.WarehouseNotFoundException;
 import com.fulfilment.application.monolith.warehouses.domain.models.Warehouse;
 import com.fulfilment.application.monolith.warehouses.domain.ports.WarehouseStore;
 import org.junit.jupiter.api.BeforeEach;
@@ -68,12 +69,13 @@ class ArchiveWarehouseUseCaseTest {
     when(warehouseStore.findByBusinessUnitCode("MWH.999")).thenReturn(null);
 
     // When & Then
-    IllegalArgumentException exception =
+    WarehouseNotFoundException exception =
         assertThrows(
-            IllegalArgumentException.class, () -> archiveWarehouseUseCase.archive(warehouse));
+            WarehouseNotFoundException.class, () -> archiveWarehouseUseCase.archive(warehouse));
 
     assertEquals(
         "Warehouse with business unit code MWH.999 not found", exception.getMessage());
+    assertEquals("MWH.999", exception.getBusinessUnitCode());
     verify(warehouseStore, never()).update(any());
   }
 

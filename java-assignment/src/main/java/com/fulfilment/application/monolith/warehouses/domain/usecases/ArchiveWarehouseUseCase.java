@@ -1,5 +1,6 @@
 package com.fulfilment.application.monolith.warehouses.domain.usecases;
 
+import com.fulfilment.application.monolith.warehouses.domain.exceptions.WarehouseNotFoundException;
 import com.fulfilment.application.monolith.warehouses.domain.models.Warehouse;
 import com.fulfilment.application.monolith.warehouses.domain.ports.ArchiveWarehouseOperation;
 import com.fulfilment.application.monolith.warehouses.domain.ports.WarehouseStore;
@@ -27,8 +28,7 @@ public class ArchiveWarehouseUseCase implements ArchiveWarehouseOperation {
     if (existing == null) {
       LOGGER.warnf(
           "Warehouse archival failed: Business unit code %s not found", warehouse.businessUnitCode);
-      throw new IllegalArgumentException(
-          "Warehouse with business unit code " + warehouse.businessUnitCode + " not found");
+      throw new WarehouseNotFoundException(warehouse.businessUnitCode);
     }
 
     // Set the archived timestamp

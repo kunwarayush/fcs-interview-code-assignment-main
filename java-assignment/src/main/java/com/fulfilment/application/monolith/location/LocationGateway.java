@@ -30,7 +30,7 @@ public class LocationGateway implements LocationResolver {
   public Location resolveByIdentifier(String identifier) {
     Location location = locationMap.getOrDefault(identifier, null);
     if (location == null) {
-      throw new IllegalArgumentException("Location with identifier " + identifier + " not found.");
+      throw new LocationNotFoundException(identifier);
     }
     return location;
   }

@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import com.fulfilment.application.monolith.exceptions.BusinessValidationException;
+import com.fulfilment.application.monolith.location.LocationNotFoundException;
 import com.fulfilment.application.monolith.warehouses.adapters.database.WarehouseRepository;
 import com.fulfilment.application.monolith.warehouses.domain.models.Location;
 import com.fulfilment.application.monolith.warehouses.domain.models.Warehouse;
@@ -65,8 +67,8 @@ class CreateWarehouseUseCaseTest {
     when(warehouseRepository.findByBusinessUnitCode("MWH.100")).thenReturn(existingWarehouse);
 
     // When & Then
-    IllegalArgumentException exception =
-        assertThrows(IllegalArgumentException.class, () -> createWarehouseUseCase.create(warehouse));
+    BusinessValidationException exception =
+        assertThrows(BusinessValidationException.class, () -> createWarehouseUseCase.create(warehouse));
 
     assertEquals(
         "Warehouse with business unit code MWH.100 already exists", exception.getMessage());
@@ -81,13 +83,14 @@ class CreateWarehouseUseCaseTest {
 
     when(warehouseRepository.findByBusinessUnitCode("MWH.100")).thenReturn(null);
     when(locationResolver.resolveByIdentifier("AMSTERDAM-001"))
-        .thenThrow(new IllegalArgumentException("Location with identifier AMSTERDAM-001 not found."));
+        .thenThrow(new LocationNotFoundException("AMSTERDAM-001"));
 
     // When & Then
-    IllegalArgumentException exception =
-        assertThrows(IllegalArgumentException.class, () -> createWarehouseUseCase.create(warehouse));
+    LocationNotFoundException exception =
+        assertThrows(LocationNotFoundException.class, () -> createWarehouseUseCase.create(warehouse));
 
     assertTrue(exception.getMessage().contains("Location with identifier AMSTERDAM-001 not found"));
+    assertEquals("AMSTERDAM-001", exception.getIdentifier());
     verify(warehouseRepository, never()).create(any());
   }
 
@@ -103,8 +106,8 @@ class CreateWarehouseUseCaseTest {
     when(warehouseRepository.countActiveWarehousesAtLocation("AMSTERDAM-001")).thenReturn(3L);
 
     // When & Then
-    IllegalArgumentException exception =
-        assertThrows(IllegalArgumentException.class, () -> createWarehouseUseCase.create(warehouse));
+    BusinessValidationException exception =
+        assertThrows(BusinessValidationException.class, () -> createWarehouseUseCase.create(warehouse));
 
     assertEquals(
         "Maximum number of warehouses (3) reached for location AMSTERDAM-001",
@@ -126,8 +129,8 @@ class CreateWarehouseUseCaseTest {
     when(warehouseRepository.getTotalCapacityAtLocation("AMSTERDAM-001")).thenReturn(50);
 
     // When & Then
-    IllegalArgumentException exception =
-        assertThrows(IllegalArgumentException.class, () -> createWarehouseUseCase.create(warehouse));
+    BusinessValidationException exception =
+        assertThrows(BusinessValidationException.class, () -> createWarehouseUseCase.create(warehouse));
 
     assertEquals(
         "Total capacity 110 would exceed location's maximum capacity of 100",
@@ -150,8 +153,8 @@ class CreateWarehouseUseCaseTest {
     when(warehouseRepository.getTotalCapacityAtLocation("AMSTERDAM-001")).thenReturn(40);
 
     // When & Then
-    IllegalArgumentException exception =
-        assertThrows(IllegalArgumentException.class, () -> createWarehouseUseCase.create(warehouse));
+    BusinessValidationException exception =
+        assertThrows(BusinessValidationException.class, () -> createWarehouseUseCase.create(warehouse));
 
     assertEquals("Warehouse stock (30) exceeds capacity (20)", exception.getMessage());
     verify(warehouseRepository, never()).create(any());
