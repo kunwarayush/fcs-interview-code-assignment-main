@@ -26,7 +26,7 @@ class WarehouseEndpointTest {
   void testCreateWarehouse_Success() {
     String requestBody =
         "{"
-            + "\"id\": \""
+            + "\"businessUnitCode\": \""
             + TEST_BUSINESS_UNIT
             + "\","
             + "\"location\": \"AMSTERDAM-001\","
@@ -41,7 +41,7 @@ class WarehouseEndpointTest {
         .post(WAREHOUSE_ENDPOINT)
         .then()
         .statusCode(200)
-        .body("id", is(TEST_BUSINESS_UNIT))
+        .body("businessUnitCode", is(TEST_BUSINESS_UNIT))
         .body("location", is("AMSTERDAM-001"))
         .body("capacity", is(50))
         .body("stock", is(10));
@@ -49,14 +49,14 @@ class WarehouseEndpointTest {
 
   @Test
   @Order(2)
-  @DisplayName("Should get warehouse by ID")
+  @DisplayName("Should get warehouse by business unit code")
   void testGetWarehouse_Success() {
     given()
         .when()
         .get(WAREHOUSE_ENDPOINT + "/" + TEST_BUSINESS_UNIT)
         .then()
         .statusCode(200)
-        .body("id", is(TEST_BUSINESS_UNIT))
+        .body("businessUnitCode", is(TEST_BUSINESS_UNIT))
         .body("location", is("AMSTERDAM-001"))
         .body("capacity", is(50))
         .body("stock", is(10));
@@ -68,7 +68,7 @@ class WarehouseEndpointTest {
   void testCreateWarehouse_DuplicateCode() {
     String requestBody =
         "{"
-            + "\"id\": \""
+            + "\"businessUnitCode\": \""
             + TEST_BUSINESS_UNIT
             + "\","
             + "\"location\": \"ZWOLLE-001\","
@@ -92,7 +92,7 @@ class WarehouseEndpointTest {
   void testCreateWarehouse_InvalidLocation() {
     String requestBody =
         "{"
-            + "\"id\": \"INVALID-LOC-"
+            + "\"businessUnitCode\": \"INVALID-LOC-"
             + System.currentTimeMillis()
             + "\","
             + "\"location\": \"NONEXISTENT-999\","
@@ -116,7 +116,7 @@ class WarehouseEndpointTest {
   void testCreateWarehouse_StockExceedsCapacity() {
     String requestBody =
         "{"
-            + "\"id\": \"STOCK-EXCEED-"
+            + "\"businessUnitCode\": \"STOCK-EXCEED-"
             + System.currentTimeMillis()
             + "\","
             + "\"location\": \"AMSTERDAM-002\","
@@ -143,7 +143,7 @@ class WarehouseEndpointTest {
     String buCode1 = "CAP-TEST-A-" + System.currentTimeMillis();
     String requestBody1 =
         "{"
-            + "\"id\": \""
+            + "\"businessUnitCode\": \""
             + buCode1
             + "\","
             + "\"location\": \"AMSTERDAM-002\","
@@ -157,7 +157,7 @@ class WarehouseEndpointTest {
     String buCode2 = "CAP-TEST-B-" + System.currentTimeMillis();
     String requestBody2 =
         "{"
-            + "\"id\": \""
+            + "\"businessUnitCode\": \""
             + buCode2
             + "\","
             + "\"location\": \"AMSTERDAM-002\","
@@ -183,7 +183,7 @@ class WarehouseEndpointTest {
     String buCode1 = "HELMOND-1-" + System.currentTimeMillis();
     String requestBody1 =
         "{"
-            + "\"id\": \""
+            + "\"businessUnitCode\": \""
             + buCode1
             + "\","
             + "\"location\": \"HELMOND-001\","
@@ -197,7 +197,7 @@ class WarehouseEndpointTest {
     String buCode2 = "HELMOND-2-" + System.currentTimeMillis();
     String requestBody2 =
         "{"
-            + "\"id\": \""
+            + "\"businessUnitCode\": \""
             + buCode2
             + "\","
             + "\"location\": \"HELMOND-001\","
@@ -223,7 +223,7 @@ class WarehouseEndpointTest {
     String buCode = "ARCHIVE-TEST-" + System.currentTimeMillis();
     String requestBody =
         "{"
-            + "\"id\": \""
+            + "\"businessUnitCode\": \""
             + buCode
             + "\","
             + "\"location\": \"VETSBY-001\","
@@ -257,7 +257,7 @@ class WarehouseEndpointTest {
     String buCode = "REPLACE-TEST-" + System.currentTimeMillis();
     String createBody =
         "{"
-            + "\"id\": \""
+            + "\"businessUnitCode\": \""
             + buCode
             + "\","
             + "\"location\": \"EINDHOVEN-001\","
@@ -276,7 +276,7 @@ class WarehouseEndpointTest {
     // Replace it with different location but same stock
     String replaceBody =
         "{"
-            + "\"id\": \""
+            + "\"businessUnitCode\": \""
             + buCode
             + "\","
             + "\"location\": \"ZWOLLE-002\","
@@ -291,7 +291,7 @@ class WarehouseEndpointTest {
         .post(WAREHOUSE_ENDPOINT + "/" + buCode + "/replacement")
         .then()
         .statusCode(200)
-        .body("id", is(buCode))
+        .body("businessUnitCode", is(buCode))
         .body("location", is("ZWOLLE-002"))
         .body("capacity", is(25))
         .body("stock", is(10));
@@ -305,7 +305,7 @@ class WarehouseEndpointTest {
     String buCode = "REPLACE-STOCK-" + System.currentTimeMillis();
     String createBody =
         "{"
-            + "\"id\": \""
+            + "\"businessUnitCode\": \""
             + buCode
             + "\","
             + "\"location\": \"VETSBY-001\","
@@ -324,7 +324,7 @@ class WarehouseEndpointTest {
     // Try to replace with different stock (25 instead of 20)
     String replaceBody =
         "{"
-            + "\"id\": \""
+            + "\"businessUnitCode\": \""
             + buCode
             + "\","
             + "\"location\": \"VETSBY-001\","
@@ -350,7 +350,7 @@ class WarehouseEndpointTest {
     String buCode = "REPLACE-CAP-" + System.currentTimeMillis();
     String createBody =
         "{"
-            + "\"id\": \""
+            + "\"businessUnitCode\": \""
             + buCode
             + "\","
             + "\"location\": \"EINDHOVEN-001\","
@@ -369,7 +369,7 @@ class WarehouseEndpointTest {
     // Try to replace with capacity less than stock (15 < 20)
     String replaceBody =
         "{"
-            + "\"id\": \""
+            + "\"businessUnitCode\": \""
             + buCode
             + "\","
             + "\"location\": \"ZWOLLE-002\","
@@ -395,7 +395,7 @@ class WarehouseEndpointTest {
     String buCode = "REPLACE-INVALIDLOC-" + System.currentTimeMillis();
     String createBody =
         "{"
-            + "\"id\": \""
+            + "\"businessUnitCode\": \""
             + buCode
             + "\","
             + "\"location\": \"AMSTERDAM-002\","
@@ -414,7 +414,7 @@ class WarehouseEndpointTest {
     // Try to replace with invalid location
     String replaceBody =
         "{"
-            + "\"id\": \""
+            + "\"businessUnitCode\": \""
             + buCode
             + "\","
             + "\"location\": \"INVALID-LOC-999\","
@@ -462,7 +462,7 @@ class WarehouseEndpointTest {
   void testReplaceWarehouse_NotFound() {
     String replaceBody =
         "{"
-            + "\"id\": \"NONEXISTENT-999\","
+            + "\"businessUnitCode\": \"NONEXISTENT-999\","
             + "\"location\": \"AMSTERDAM-001\","
             + "\"capacity\": 30,"
             + "\"stock\": 10"

@@ -28,12 +28,9 @@ This repository contains the completed Java code assignment implementing a fulfi
 ### Additional Enhancements
 - **Health Checks**: `/q/health`, `/q/health/live`, `/q/health/ready` endpoints
 - **CI/CD Pipeline**: GitHub Actions workflow for automated testing
-- **Comprehensive Testing**: 109 tests with 84% instruction coverage
-**TransactionSyncService** - A dedicated service for managing post-commit callbacks:
-```
-Reason : SOLID Princiapls
+- **Comprehensive Testing**: 115+ tests with 84% instruction coverage
+- **TransactionSyncService**: Dedicated service for post-commit callbacks (SOLID principles)
 
-```
 ### Exception Handling Architecture
 
 #### Exception Hierarchy
@@ -56,6 +53,18 @@ RuntimeException
 | `WarehouseNotFoundException` | `warehouses.domain.exceptions` | 404 | Warehouse not found by business unit code |
 | `LocationNotFoundException` | `location` | 404 | Location not found by identifier |
 | `BusinessValidationException` | `exceptions` | 400 | Business rule validation failures |
+
+#### Exception Mappers (JAX-RS)
+
+All mappers live in the `exceptions` package for consistency:
+
+| Mapper | Handles | HTTP Status |
+|--------|---------|-------------|
+| `EntityNotFoundExceptionMapper` | `EntityNotFoundException` and all subclasses | 404 |
+| `BusinessValidationExceptionMapper` | `BusinessValidationException` | 400 |
+| `GlobalExceptionMapper` | All other `Exception` (catch-all fallback) | 500 (or original status for `WebApplicationException`) |
+
+JAX-RS resolves the most specific mapper first — so `EntityNotFoundException` is handled by its dedicated mapper, not the global one.
 
 #### Error Response Format
 
@@ -108,11 +117,12 @@ Once running, access:
 - `PUT /stores/{id}` - Update store
 - `DELETE /stores/{id}` - Delete store
 
-#### Warehouses
-- `GET /warehouses` - List all warehouses
-- `POST /warehouses` - Create warehouse
-- `PUT /warehouses/{businessUnitCode}` - Replace warehouse
-- `DELETE /warehouses/{businessUnitCode}` - Archive warehouse
+#### Warehouses (OpenAPI spec-driven)
+- `GET /warehouse` - List all warehouses
+- `POST /warehouse` - Create warehouse
+- `GET /warehouse/{businessUnitCode}` - Get warehouse by business unit code
+- `POST /warehouse/{businessUnitCode}/replacement` - Replace warehouse
+- `DELETE /warehouse/{businessUnitCode}` - Archive warehouse
 
 ---
 

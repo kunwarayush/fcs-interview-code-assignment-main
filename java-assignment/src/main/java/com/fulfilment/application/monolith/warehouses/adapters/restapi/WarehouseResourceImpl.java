@@ -50,12 +50,12 @@ public class WarehouseResourceImpl implements WarehouseResource {
 
   @Override
   @Transactional
-  public Warehouse getAWarehouseUnitByID(String id) {
+  public Warehouse getAWarehouseUnitByBusinessUnitCode(String businessUnitCode) {
     com.fulfilment.application.monolith.warehouses.domain.models.Warehouse warehouse =
-        warehouseStore.findByBusinessUnitCode(id);
+        warehouseStore.findByBusinessUnitCode(businessUnitCode);
 
     if (warehouse == null) {
-      throw new WarehouseNotFoundException(id);
+      throw new WarehouseNotFoundException(businessUnitCode);
     }
 
     return toApiWarehouse(warehouse);
@@ -63,10 +63,10 @@ public class WarehouseResourceImpl implements WarehouseResource {
 
   @Override
   @Transactional
-  public void archiveAWarehouseUnitByID(String id) {
+  public void archiveAWarehouseUnitByBusinessUnitCode(String businessUnitCode) {
     com.fulfilment.application.monolith.warehouses.domain.models.Warehouse warehouse =
         new com.fulfilment.application.monolith.warehouses.domain.models.Warehouse();
-    warehouse.businessUnitCode = id;
+    warehouse.businessUnitCode = businessUnitCode;
 
     // WarehouseNotFoundException is handled by ExceptionMapper
     archiveWarehouseOperation.archive(warehouse);
@@ -94,7 +94,7 @@ public class WarehouseResourceImpl implements WarehouseResource {
       toDomainWarehouse(Warehouse apiWarehouse) {
     com.fulfilment.application.monolith.warehouses.domain.models.Warehouse domainWarehouse =
         new com.fulfilment.application.monolith.warehouses.domain.models.Warehouse();
-    domainWarehouse.businessUnitCode = apiWarehouse.getId();
+    domainWarehouse.businessUnitCode = apiWarehouse.getBusinessUnitCode();
     domainWarehouse.location = apiWarehouse.getLocation();
     domainWarehouse.capacity = apiWarehouse.getCapacity();
     domainWarehouse.stock = apiWarehouse.getStock();
@@ -105,7 +105,7 @@ public class WarehouseResourceImpl implements WarehouseResource {
   private Warehouse toApiWarehouse(
       com.fulfilment.application.monolith.warehouses.domain.models.Warehouse domainWarehouse) {
     Warehouse apiWarehouse = new Warehouse();
-    apiWarehouse.setId(domainWarehouse.businessUnitCode);
+    apiWarehouse.setBusinessUnitCode(domainWarehouse.businessUnitCode);
     apiWarehouse.setLocation(domainWarehouse.location);
     apiWarehouse.setCapacity(domainWarehouse.capacity);
     apiWarehouse.setStock(domainWarehouse.stock);
