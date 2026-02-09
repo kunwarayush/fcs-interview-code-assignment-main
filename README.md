@@ -36,12 +36,13 @@ This repository contains the completed Java code assignment implementing a fulfi
 #### Exception Hierarchy
 
 ```
-RuntimeException
-├── EntityNotFoundException (abstract base for 404 errors)
-│   ├── StoreNotFoundException
-│   ├── WarehouseNotFoundException
-│   └── LocationNotFoundException
-└── BusinessValidationException (for 400 validation errors)
+Exception ← GlobalExceptionMapper (catch-all → 500)
+└── RuntimeException
+    ├── EntityNotFoundException ← EntityNotFoundExceptionMapper (→ 404)
+    │   ├── StoreNotFoundException
+    │   ├── WarehouseNotFoundException
+    │   └── LocationNotFoundException
+    └── BusinessValidationException ← BusinessValidationExceptionMapper (→ 400)
 ```
 
 #### Custom Exceptions
