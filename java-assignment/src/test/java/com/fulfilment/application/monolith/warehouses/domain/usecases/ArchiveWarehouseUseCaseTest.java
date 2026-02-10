@@ -75,7 +75,7 @@ class ArchiveWarehouseUseCaseTest {
 
     assertEquals(
         "Warehouse with business unit code MWH.999 not found", exception.getMessage());
-    assertEquals("MWH.999", exception.getBusinessUnitCode());
+    assertEquals("MWH.999", exception.getIdentifier());
     verify(warehouseStore, never()).update(any());
   }
 

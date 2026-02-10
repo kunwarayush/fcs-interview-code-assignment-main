@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.*;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
+import io.restassured.response.Response;
 import org.junit.jupiter.api.*;
 
 /**
@@ -19,6 +20,7 @@ class WarehouseEndpointTest {
   private static final String WAREHOUSE_ENDPOINT = "/warehouse";
   private static final String TEST_BUSINESS_UNIT = "TEST-WH-" + System.currentTimeMillis();
   private static final String TEST_BUSINESS_UNIT_2 = "TEST-WH2-" + System.currentTimeMillis();
+  private static String createdWarehouseId;
 
   @Test
   @Order(1)
@@ -34,7 +36,7 @@ class WarehouseEndpointTest {
             + "\"stock\": 10"
             + "}";
 
-    given()
+    Response response = given()
         .contentType(ContentType.JSON)
         .body(requestBody)
         .when()
@@ -44,18 +46,25 @@ class WarehouseEndpointTest {
         .body("businessUnitCode", is(TEST_BUSINESS_UNIT))
         .body("location", is("AMSTERDAM-001"))
         .body("capacity", is(50))
-        .body("stock", is(10));
+        .body("stock", is(10))
+        .body("id", notNullValue())
+        .extract()
+        .response();
+
+    // Store the ID for subsequent tests
+    createdWarehouseId = response.jsonPath().getString("id");
   }
 
   @Test
   @Order(2)
-  @DisplayName("Should get warehouse by business unit code")
+  @DisplayName("Should get warehouse by ID")
   void testGetWarehouse_Success() {
     given()
         .when()
-        .get(WAREHOUSE_ENDPOINT + "/" + TEST_BUSINESS_UNIT)
+        .get(WAREHOUSE_ENDPOINT + "/" + createdWarehouseId)
         .then()
         .statusCode(200)
+        .body("id", is(createdWarehouseId))
         .body("businessUnitCode", is(TEST_BUSINESS_UNIT))
         .body("location", is("AMSTERDAM-001"))
         .body("capacity", is(50))
@@ -231,19 +240,30 @@ class WarehouseEndpointTest {
             + "\"stock\": 10"
             + "}";
 
-    given().contentType(ContentType.JSON).body(requestBody).when().post(WAREHOUSE_ENDPOINT);
+    Response createResponse = given()
+        .contentType(ContentType.JSON)
+        .body(requestBody)
+        .when()
+        .post(WAREHOUSE_ENDPOINT)
+        .then()
+        .statusCode(200)
+        .extract()
+        .response();
 
-    // Archive it
-    given().when().delete(WAREHOUSE_ENDPOINT + "/" + buCode).then().statusCode(204);
+    String warehouseId = createResponse.jsonPath().getString("id");
+
+    // Archive it using the ID
+    given().when().delete(WAREHOUSE_ENDPOINT + "/" + warehouseId).then().statusCode(204);
   }
 
   @Test
   @Order(9)
   @DisplayName("Should fail to archive non-existent warehouse")
   void testArchiveWarehouse_NotFound() {
+    // Use a numeric ID that doesn't exist
     given()
         .when()
-        .delete(WAREHOUSE_ENDPOINT + "/NONEXISTENT-999")
+        .delete(WAREHOUSE_ENDPOINT + "/999999")
         .then()
         .statusCode(404)
         .body(containsString("not found"));
@@ -294,7 +314,8 @@ class WarehouseEndpointTest {
         .body("businessUnitCode", is(buCode))
         .body("location", is("ZWOLLE-002"))
         .body("capacity", is(25))
-        .body("stock", is(10));
+        .body("stock", is(10))
+        .body("id", notNullValue());
   }
 
   @Test
@@ -448,9 +469,10 @@ class WarehouseEndpointTest {
   @Order(15)
   @DisplayName("Should fail to get non-existent warehouse")
   void testGetWarehouse_NotFound() {
+    // Use a numeric ID that doesn't exist
     given()
         .when()
-        .get(WAREHOUSE_ENDPOINT + "/NONEXISTENT-999")
+        .get(WAREHOUSE_ENDPOINT + "/999999")
         .then()
         .statusCode(404)
         .body(containsString("not found"));

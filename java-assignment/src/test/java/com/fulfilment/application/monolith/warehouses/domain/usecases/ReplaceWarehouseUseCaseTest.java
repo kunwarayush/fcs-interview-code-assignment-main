@@ -72,7 +72,7 @@ class ReplaceWarehouseUseCaseTest {
 
     assertEquals(
         "Warehouse with business unit code MWH.100 not found", exception.getMessage());
-    assertEquals("MWH.100", exception.getBusinessUnitCode());
+    assertEquals("MWH.100", exception.getIdentifier());
     verify(warehouseRepository, never()).update(any());
   }
 

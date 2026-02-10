@@ -6,8 +6,6 @@ import com.fulfilment.application.monolith.warehouses.domain.ports.WarehouseStor
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.List;
 
 @ApplicationScoped
@@ -61,6 +59,12 @@ public class WarehouseRepository implements WarehouseStore, PanacheRepository<Db
     return dbWarehouse != null ? toDomainWarehouse(dbWarehouse) : null;
   }
 
+  @Override
+  public Warehouse findWarehouseById(Long id) {
+    DbWarehouse dbWarehouse = find("id", id).firstResult();
+    return dbWarehouse != null ? toDomainWarehouse(dbWarehouse) : null;
+  }
+
   /**
    * Count non-archived warehouses at a specific location
    */
@@ -98,6 +102,7 @@ public class WarehouseRepository implements WarehouseStore, PanacheRepository<Db
   // Convert database entity to domain model
   private Warehouse toDomainWarehouse(DbWarehouse dbWarehouse) {
     Warehouse warehouse = new Warehouse();
+    warehouse.id = dbWarehouse.id;
     warehouse.businessUnitCode = dbWarehouse.businessUnitCode;
     warehouse.location = dbWarehouse.location;
     warehouse.capacity = dbWarehouse.capacity;

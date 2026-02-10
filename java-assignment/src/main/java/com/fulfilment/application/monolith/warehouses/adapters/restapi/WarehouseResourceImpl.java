@@ -44,18 +44,23 @@ public class WarehouseResourceImpl implements WarehouseResource {
     // Exceptions (LocationNotFoundException, IllegalArgumentException) are handled by ExceptionMappers
     createWarehouseOperation.create(domainWarehouse);
 
-    // Return the created warehouse as API bean
-    return data;
+    // Fetch the created warehouse to get the assigned ID
+    Warehouse createdWarehouse =
+        warehouseStore.findByBusinessUnitCode(data.getBusinessUnitCode());
+
+    // Return the created warehouse with ID populated
+    return toApiWarehouse(createdWarehouse);
   }
 
   @Override
   @Transactional
-  public Warehouse getAWarehouseUnitByBusinessUnitCode(String businessUnitCode) {
+  public Warehouse getAWarehouseUnitByID(String id) {
+    Long warehouseId = Long.parseLong(id);
     com.fulfilment.application.monolith.warehouses.domain.models.Warehouse warehouse =
-        warehouseStore.findByBusinessUnitCode(businessUnitCode);
+        warehouseStore.findWarehouseById(warehouseId);
 
     if (warehouse == null) {
-      throw new WarehouseNotFoundException(businessUnitCode);
+      throw new WarehouseNotFoundException(warehouseId);
     }
 
     return toApiWarehouse(warehouse);
@@ -63,10 +68,14 @@ public class WarehouseResourceImpl implements WarehouseResource {
 
   @Override
   @Transactional
-  public void archiveAWarehouseUnitByBusinessUnitCode(String businessUnitCode) {
+  public void archiveAWarehouseUnitByID(String id) {
+    Long warehouseId = Long.parseLong(id);
     com.fulfilment.application.monolith.warehouses.domain.models.Warehouse warehouse =
-        new com.fulfilment.application.monolith.warehouses.domain.models.Warehouse();
-    warehouse.businessUnitCode = businessUnitCode;
+        warehouseStore.findWarehouseById(warehouseId);
+
+    if (warehouse == null) {
+      throw new WarehouseNotFoundException(warehouseId);
+    }
 
     // WarehouseNotFoundException is handled by ExceptionMapper
     archiveWarehouseOperation.archive(warehouse);
@@ -85,8 +94,12 @@ public class WarehouseResourceImpl implements WarehouseResource {
     // are handled by ExceptionMappers
     replaceWarehouseOperation.replace(domainWarehouse);
 
-    // Return the replaced warehouse as API bean
-    return data;
+    // Fetch the replaced warehouse to get the new ID
+    com.fulfilment.application.monolith.warehouses.domain.models.Warehouse replacedWarehouse =
+        warehouseStore.findByBusinessUnitCode(businessUnitCode);
+
+    // Return the replaced warehouse with ID populated
+    return toApiWarehouse(replacedWarehouse);
   }
 
   // Convert API bean to domain model
@@ -105,6 +118,9 @@ public class WarehouseResourceImpl implements WarehouseResource {
   private Warehouse toApiWarehouse(
       com.fulfilment.application.monolith.warehouses.domain.models.Warehouse domainWarehouse) {
     Warehouse apiWarehouse = new Warehouse();
+    if (domainWarehouse.id != null) {
+      apiWarehouse.setId(String.valueOf(domainWarehouse.id));
+    }
     apiWarehouse.setBusinessUnitCode(domainWarehouse.businessUnitCode);
     apiWarehouse.setLocation(domainWarehouse.location);
     apiWarehouse.setCapacity(domainWarehouse.capacity);

@@ -121,9 +121,9 @@ Once running, access:
 #### Warehouses (OpenAPI spec-driven)
 - `GET /warehouse` - List all warehouses
 - `POST /warehouse` - Create warehouse
-- `GET /warehouse/{businessUnitCode}` - Get warehouse by business unit code
-- `POST /warehouse/{businessUnitCode}/replacement` - Replace warehouse
-- `DELETE /warehouse/{businessUnitCode}` - Archive warehouse
+- `GET /warehouse/{id}` - Get warehouse by database ID
+- `DELETE /warehouse/{id}` - Archive warehouse by database ID
+- `POST /warehouse/{businessUnitCode}/replacement` - Replace warehouse by business unit code
 
 ---
 
